@@ -12,7 +12,7 @@ export class NavMenu extends Component {
       <Navbar inverse fixedTop fluid collapseOnSelect>
         <Navbar.Header>
           <Navbar.Brand>
-            <Link to={'/'}>Skraper3  <span class="	glyphicon glyphicon-eye-open" aria-hidden="true"></span></Link>
+            <Link to={'/'}>Skraper3  <span className="	glyphicon glyphicon-eye-open" aria-hidden="true"></span></Link>
           </Navbar.Brand>
           <Navbar.Toggle />
         </Navbar.Header>

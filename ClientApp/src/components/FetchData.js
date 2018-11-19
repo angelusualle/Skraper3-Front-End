@@ -6,12 +6,6 @@ export class FetchData extends Component {
   constructor(props) {
     super(props);
     this.state = { forecasts: [], loading: true };
-
-    fetch('api/SampleData/WeatherForecasts')
-      .then(response => response.json())
-      .then(data => {
-        this.setState({ forecasts: data, loading: false });
-      });
   }
 
   static renderForecastsTable(forecasts) {
