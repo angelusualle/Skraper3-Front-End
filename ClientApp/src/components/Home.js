@@ -21,18 +21,7 @@ export class Home extends Component {
 
   
   reset(e){
-    this.setState({
-      URL: '',
-      Email: '',
-      MobileNumber: '',
-      XPath: '',
-      isLoading: false,
-      invalid: false,
-      successMessage: '',
-      isSubbed: false,
-      failureMessage: '',
-      isFailure: false
-    });
+    window.location.reload();
   }
 
   handleChange(id, val) {
@@ -41,20 +30,20 @@ export class Home extends Component {
   }
 
   checkValidity(){
-    if (this.getValidationStateEmail() == 'success' && this.getValidationStateURL() == 'success'){
+    if (this.getValidationStateEmail() === 'success' && this.getValidationStateURL() === 'success'){
       return true;
     }
     return false;
   }
 
   getValidationStateURL(){
-    if (this.state.URL.length == 0) return null;
+    if (this.state.URL.length === 0 || this.state.isLoading || this.state.isSubbed) return null;
     if (validator.isURL(this.state.URL)) return 'success';
     return 'error'
   }
 
   getValidationStateEmail(){
-    if (this.state.Email.length == 0) return null;
+    if (this.state.Email.length === 0|| this.state.isLoading || this.state.isSubbed) return null;
     if (validator.isEmail(this.state.Email)) return 'success';
     return 'error'
   }
@@ -92,39 +81,43 @@ export class Home extends Component {
           <Form onSubmit= {(e) => this.handleSub(e)} onReset={(e) => this.reset(e)}>
             <FieldGroup
               id="URL"
+              name="URL"
               type="text"
               required
               label="*URL"
               onChange={(e) => this.handleChange(e.target.id, e.target.value)}
-              disabled={this.state.isSubbed}
+              disabled={this.state.isSubbed || this.state.isLoading}
+              help="Example: http://www.google.com/search"
               validationState={this.getValidationStateURL()}
-              placeholder="http://somesitetowatch.com"
             />
             <FieldGroup
               id="Email"
+              name="Email"
               type="email"
               required
               label="*Email"
               validationState={this.getValidationStateEmail()}
               onChange={(e) => this.handleChange(e.target.id, e.target.value)}
-              disabled={this.state.isSubbed}
-              placeholder="YourEmail@domain.com"
+              help="Example: YourEmail@domain.com"
+              disabled={this.state.isSubbed || this.state.isLoading}
             />
             <FieldGroup
               id="MobileNumber"
               type="tel"
+              name="MobileNumber"
               label="Mobile Phone"
               onChange={(e) => this.handleChange(e.target.id, e.target.value)}
-              disabled={this.state.isSubbed}
-              placeholder="15555555"
+              disabled={this.state.isSubbed || this.state.isLoading}
+              help="Example: 18134477789"
             />
             <FieldGroup
               id="XPath"
+              name="XPath"
               type="text"
               label="XPath"
               onChange={(e) => this.handleChange(e.target.id, e.target.value)}
-              placeholder="(//table[contains(@summary, 'This layout table is used to present the seating numbers.')]//tr)[position() < last()]"
-              disabled={this.state.isSubbed}
+              help="Example: (//table//tr)[position() < last()]"
+              disabled={this.state.isSubbed || this.state.isLoading}
             />
             <p>* Required field.</p>
             <Button type="submit" 
@@ -158,6 +151,7 @@ export class Home extends Component {
         <Alert bsStyle="success" >
           <strong>Subscription Saved.</strong> {this.state.successMessage}
         </Alert>}
+        <p> Make sure we are not on your spam list! The emails from Skraper will come from angelusualle@gmail.com</p>
       </div>
     );
   }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 
 namespace Skraper3FrontEnd
 {
@@ -8,6 +9,7 @@ namespace Skraper3FrontEnd
     {
         public SubscriptionsContext()
         {
+
         }
 
         public SubscriptionsContext(DbContextOptions<SubscriptionsContext> options)
@@ -16,14 +18,6 @@ namespace Skraper3FrontEnd
         }
 
         public virtual DbSet<Subscriptions> Subscriptions { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlite("Filename=Subscriptions.db");
-            }
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

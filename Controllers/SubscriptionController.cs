@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Skraper3FrontEnd.Controllers
 {
@@ -10,18 +12,28 @@ namespace Skraper3FrontEnd.Controllers
     public class SubscriptionController : Controller
     {
         private SubscriptionsContext _context;
-        public SubscriptionController(SubscriptionsContext context)
+        private readonly ILogger _logger;
+        public SubscriptionController(SubscriptionsContext context, ILogger<SubscriptionController> logger)
         {
             _context = context;
-            
+            _logger = logger;
         }
         [HttpPost("Add")]
-        public IActionResult Add([FromBody]Subscriptions sub)
+        public async Task<IActionResult> Add([FromBody]Subscriptions sub)
         {
             if (!ModelState.IsValid) {
                 return BadRequest("Missing Email or URL.");
             }
-            var test = _context.Subscriptions.First();
+            try {
+                if (await _context.Subscriptions.AnyAsync(s => s.Email.ToUpper() == sub.Email.ToUpper() && s.URL.ToUpper() == sub.URL.ToUpper())){
+                    return BadRequest("A duplicate exists.");
+                }
+                await _context.Subscriptions.AddAsync(sub);
+            }
+            catch (Exception e){
+                _logger.LogError(e.ToString());
+                return BadRequest(e.ToString());
+            }
             return Ok($"Subscribed {sub.Email} to {sub.URL}");
         }
         

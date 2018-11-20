@@ -21,8 +21,9 @@ namespace Skraper3FrontEnd
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            var dataSrc = Configuration["DBFilePath"];
             services.AddDbContext<SubscriptionsContext>(options =>
-                  options.UseSqlite("Data Source=Subscriptions.db"));
+                  options.UseSqlite($"Data Source={dataSrc}"));
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
