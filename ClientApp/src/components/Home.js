@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { FormGroup, ControlLabel, FormControl, HelpBlock, Panel, Button, Alert } from 'react-bootstrap';
+import escapeRegExp from 'escape-string-regexp'
+import { FormGroup, ControlLabel, FormControl, HelpBlock, Panel, Button, Alert, Form } from 'react-bootstrap';
 import './Home.css';
+import validator from "validator"
 
 export class Home extends Component {
   displayName = Home.name
@@ -10,48 +12,57 @@ export class Home extends Component {
     MobileNumber: '',
     XPath: '',
     isLoading: false,
-    invalid: false,
+    invalid: true,
     successMessage: '',
     isSubbed: false,
     failureMessage: '',
-    isFailure: false
+    isFailure: false,
+    invalidMessage: '',
   }
 
-  initState={
-    URL: '',
-    Email: '',
-    MobileNumber: '',
-    XPath: '',
-    isLoading: false,
-    invalid: false,
-    successMessage: '',
-    isSubbed: false,
-    failureMessage: '',
-    isFailure: false
-  }
   
-  reset(){
-    this.setState(this.state.initState);
-  }
-
-  validData(){
-    if (this.state.URL.length === 0 || this.state.Email.length === 0) return false;
-    return true;
+  reset(e){
+    this.setState({
+      URL: '',
+      Email: '',
+      MobileNumber: '',
+      XPath: '',
+      isLoading: false,
+      invalid: false,
+      successMessage: '',
+      isSubbed: false,
+      failureMessage: '',
+      isFailure: false
+    });
   }
 
   handleChange(id, val) {
-    this.setState({[id]:val})
-    if (!this.validData()) {
-      this.setState({invalid:false})
-      return;
-    }
+    var valid = this.checkValidity();
+    this.setState({[id]:val, invalid:!valid})
   }
 
-  handleSub(){
-    if (!this.validData()) {
-      this.setState({invalid:true})
-      return;
+  checkValidity(){
+    if (this.getValidationStateEmail() == 'success' && this.getValidationStateURL() == 'success'){
+      return true;
     }
+    return false;
+  }
+
+  getValidationStateURL(){
+    if (this.state.URL.length == 0) return null;
+    if (validator.isURL(this.state.URL)) return 'success';
+    return 'error'
+  }
+
+  getValidationStateEmail(){
+    if (this.state.Email.length == 0) return null;
+    if (validator.isEmail(this.state.Email)) return 'success';
+    return 'error'
+  }
+
+  handleSub(e){
+    e.preventDefault()
+
     this.setState({isLoading:true});
     fetch('api/Subscription/Add', {
           method:'POST',
@@ -69,63 +80,76 @@ export class Home extends Component {
       <div>
         <h3>Welcome to Skraper3</h3>
         <h4>It watches websites and lets you know when they change.</h4>
-        <p>To subscribe to a website, enter in form below its URL, your email and optional phone number to get alerted when the site changes.</p>
+        <p>To subscribe to a website, fill form at bottom of this page using its URL, your email and optional phone number to get alerted when the site changes.</p>
         <h3>XPath</h3>
         <p>There is also an optional XPath parameter that 
-          can be used to specify if only part of a website should be watched. Please see below to test your XPath:</p>
-        <a href="http://videlibri.sourceforge.net/cgi-bin/xidelcgi">HTML XPath testing site</a>
-        <br/>
+          can be used to specify if only part of a website should be watched. Please see below links to test your XPath:</p>
         <a href="http://benibela.de/documentation/internettools/xquery.TXQueryEngine.html">HTML XPath Guide</a>
+        <br/>
+        <a href="http://videlibri.sourceforge.net/cgi-bin/xidelcgi">HTML XPath Testing Site</a>
         <br/>
         <br/>
         <Panel>
-          <FieldGroup
-            id="URL"
-            type="text"
-            label="*URL"
-            onChange={(e) => this.handleChange(e.target.id, e.target.value)}
-            
-            placeholder="http://somesitetowatch.com"
-          />
-          <FieldGroup
-            id="Email"
-            type="email"
-            label="*Email"
-            onChange={(e) => this.handleChange(e.target.id, e.target.value)}
-            disabled={this.state.isSubbed}
-            placeholder="YourEmail@domain.com"
-          />
-          <FieldGroup
-            id="MobileNumber"
-            type="tel"
-            label="Mobile Phone"
-            onChange={(e) => this.handleChange(e.target.id, e.target.value)}
-            disabled={this.state.isSubbed}
-            placeholder="15555555"
-          />
-          <FieldGroup
-            id="XPath"
-            type="text"
-            label="XPath"
-            onChange={(e) => this.handleChange(e.target.id, e.target.value)}
-            placeholder="(//table[contains(@summary, 'This layout table is used to present the seating numbers.')]//tr)[position() < last()]"
-            disabled={this.state.isSubbed}
-          />
-          <p>* Required field.</p>
-          <Button bsStyle="primary" bsSize="large" disabled={this.state.isLoading || this.state.isSubbed} onClick={!this.state.isLoading ? (e) => this.handleSub(): null}>
-            {this.state.isLoading && 'Subscribing..'}
-            {this.state.isSubbed && 'Subscribed!'}
-            {!this.state.isSubbed && !this.state.isLoading && 'Subscribe!'}
-          </Button>
-          {this.state.isSubbed &&
-            <Button bsStyle="info" bsSize="large" onClick={(e) => this.reset()}>
-              Add Another Subscription
+          <Form onSubmit= {(e) => this.handleSub(e)} onReset={(e) => this.reset(e)}>
+            <FieldGroup
+              id="URL"
+              type="text"
+              required
+              label="*URL"
+              onChange={(e) => this.handleChange(e.target.id, e.target.value)}
+              disabled={this.state.isSubbed}
+              validationState={this.getValidationStateURL()}
+              placeholder="http://somesitetowatch.com"
+            />
+            <FieldGroup
+              id="Email"
+              type="email"
+              required
+              label="*Email"
+              validationState={this.getValidationStateEmail()}
+              onChange={(e) => this.handleChange(e.target.id, e.target.value)}
+              disabled={this.state.isSubbed}
+              placeholder="YourEmail@domain.com"
+            />
+            <FieldGroup
+              id="MobileNumber"
+              type="tel"
+              label="Mobile Phone"
+              onChange={(e) => this.handleChange(e.target.id, e.target.value)}
+              disabled={this.state.isSubbed}
+              placeholder="15555555"
+            />
+            <FieldGroup
+              id="XPath"
+              type="text"
+              label="XPath"
+              onChange={(e) => this.handleChange(e.target.id, e.target.value)}
+              placeholder="(//table[contains(@summary, 'This layout table is used to present the seating numbers.')]//tr)[position() < last()]"
+              disabled={this.state.isSubbed}
+            />
+            <p>* Required field.</p>
+            <Button type="submit" 
+              bsStyle="primary" 
+              bsSize="large" 
+              disabled={this.state.isLoading || this.state.isSubbed || this.state.invalid} 
+           >
+              {this.state.isLoading && 'Subscribing..'}
+              {this.state.isSubbed && 'Subscribed!'}
+              {!this.state.isSubbed && !this.state.isLoading && 'Subscribe!'}
             </Button>
-          }
+            {this.state.isSubbed &&
+              <Button type="reset" 
+                bsStyle="link" 
+                bsSize="large" 
+                >
+                Add Another Subscription
+              </Button>
+            }
+          </Form>
         </Panel>
-        {this.state.invalid &&
+        {this.state.invalid && this.state.invalidMessage !== '' &&
         <Alert bsStyle="danger" >
-          <strong>Missing Required Data!</strong> Make sure the URL and Email are filled out.
+          {this.state.invalidMessage}
         </Alert>}
         {this.state.isFailure &&
         <Alert bsStyle="danger" >
