@@ -32,7 +32,7 @@ namespace Skraper3FrontEnd.Controllers
             }
             catch (Exception e){
                 _logger.LogError(e.ToString());
-                return BadRequest(e.ToString());
+                return BadRequest("Unexpected issue when adding subscription. Please email administrator: angelusualle@gmail.com");
             }
             return Ok($"Subscribed {sub.Email} to {sub.URL}");
         }
