@@ -26,9 +26,10 @@ namespace Skraper3FrontEnd.Controllers
             }
             try {
                 if (await _context.Subscriptions.AnyAsync(s => s.Email.ToUpper() == sub.Email.ToUpper() && s.URL.ToUpper() == sub.URL.ToUpper())){
-                    return BadRequest("A duplicate exists.");
+                    return Conflict("A duplicate exists.");
                 }
                 await _context.Subscriptions.AddAsync(sub);
+                await _context.SaveChangesAsync();
             }
             catch (Exception e){
                 _logger.LogError(e.ToString());

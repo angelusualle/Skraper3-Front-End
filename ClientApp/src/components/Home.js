@@ -58,9 +58,14 @@ export class Home extends Component {
           headers:{'Content-Type': 'application/json;charset=UTF-8'}
         })
         .then((response) => {
-          response.text().then((t) => this.setState({successMessage: t, isSubbed: true, isLoading: false}));
+          if (response.ok) return response.text().then((t) => this.setState({successMessage: t, isSubbed: true, isLoading: false}));
+          if (response.status == 409) return Promise.reject("A subscription with this email and URL already exists. Try Again.")
+          else return Promise.reject('Please contact Administrator angelusualle@gmail.com');
         })
-        .catch((e) => this.setState({failureMessage: e.message, isFailure: true}));
+        .catch((e) => {
+          this.setState({failureMessage: e, isFailure: true, isLoading: false})}
+        
+        );
   }
 
   render() {
