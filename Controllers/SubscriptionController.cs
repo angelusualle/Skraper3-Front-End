@@ -28,6 +28,7 @@ namespace Skraper3FrontEnd.Controllers
                 if (await _context.Subscriptions.AnyAsync(s => s.Email.ToUpper() == sub.Email.ToUpper() && s.URL.ToUpper() == sub.URL.ToUpper())){
                     return Conflict("A duplicate exists.");
                 }
+                if (sub.MobileNumber.Trim().Count() == 9) sub.MobileNumber = "1" + sub.MobileNumber.Trim(); //Merica
                 await _context.Subscriptions.AddAsync(sub);
                 await _context.SaveChangesAsync();
             }
