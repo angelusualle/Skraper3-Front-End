@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import escapeRegExp from 'escape-string-regexp'
 import { FormGroup, ControlLabel, FormControl, HelpBlock, Panel, Button, Alert, Form } from 'react-bootstrap';
 import './Home.css';
 import validator from "validator"
