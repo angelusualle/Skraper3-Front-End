@@ -20,6 +20,29 @@
                 "${workspaceFolder}/Skraper3FrontEnd.csproj"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "buildProduction",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "publish",
+                "-c",
+                "Release",
+                "${workspaceFolder}/Skraper3FrontEnd.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "deployProduction",
+            "command": "pscp",
+            "type": "shell",
+            "args": [
+                "-r",
+                "${workspaceFolder}/bin/Release/netcoreapp2.1/publish/*",
+                "ec2-user@ec2-54-209-210-132.compute-1.amazonaws.com:/home/ec2-user/Skraper3/Skraper3FrontEnd",
+            ],
+            "problemMatcher": "$msCompile"
         }
     ]
 }
