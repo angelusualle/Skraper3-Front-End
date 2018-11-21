@@ -25,7 +25,7 @@ namespace Skraper3FrontEnd.Controllers
                 return BadRequest("Missing Email or URL.");
             }
             try {
-                if (await _context.Subscriptions.AnyAsync(s => s.Email.ToUpper() == sub.Email.ToUpper() && s.URL.ToUpper() == sub.URL.ToUpper())){
+                if (await _context.Subscriptions.AnyAsync(s => s.Email.ToUpper() == sub.Email.ToUpper() && s.Url.ToUpper() == sub.Url.ToUpper())){
                     return Conflict("A duplicate exists.");
                 }
                 if (sub.MobileNumber.Trim().Count() == 9) sub.MobileNumber = "1" + sub.MobileNumber.Trim(); //Merica
@@ -36,7 +36,7 @@ namespace Skraper3FrontEnd.Controllers
                 _logger.LogError(e.ToString());
                 return BadRequest("Unexpected issue when adding subscription. Please email administrator: angelusualle@gmail.com");
             }
-            return Ok($"Subscribed {sub.Email} to {sub.URL}");
+            return Ok($"Subscribed {sub.Email} to {sub.Url}");
         }
         
     }

@@ -26,7 +26,7 @@ export class Home extends Component {
 
   handleChange(id, val) {
     var valid = this.checkValidity();
-    this.setState({[id]:val, invalid:!valid})
+    this.setState({[id]:val, invalid:!valid, isFailure: false})
   }
 
   checkValidity(){
@@ -156,7 +156,7 @@ export class Home extends Component {
         <Alert bsStyle="success" >
           <strong>Subscription Saved.</strong> {this.state.successMessage}
         </Alert>}
-        <p> Make sure we are not on your spam list! The emails from Skraper will come from angelusualle@gmail.com</p>
+        <p> Make sure we are not on your spam list! The emails from Skraper will come from skraper3@outlook.com</p>
       </div>
     );
   }
