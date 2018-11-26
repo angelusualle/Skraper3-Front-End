@@ -21,12 +21,25 @@ export class Home extends Component {
 
   
   reset(e){
-    window.location.reload();
+    this.setState({
+      URL: '',
+      Email: '',
+      MobileNumber: '',
+      XPath: '',
+      isLoading: false,
+      invalid: true,
+      successMessage: '',
+      isSubbed: false,
+      failureMessage: '',
+      isFailure: false,
+      invalidMessage: '',
+    });
   }
 
   handleChange(id, val) {
+    this.setState({[id]:val, invalid:!valid, isFailure: false});
     var valid = this.checkValidity();
-    this.setState({[id]:val, invalid:!valid, isFailure: false})
+    this.setState({invalid:!valid});
   }
 
   checkValidity(){
@@ -59,12 +72,11 @@ export class Home extends Component {
         })
         .then((response) => {
           if (response.ok) return response.text().then((t) => this.setState({successMessage: t, isSubbed: true, isLoading: false}));
-          if (response.status == 409) return Promise.reject("A subscription with this email and URL already exists. Try Again.")
-          else return Promise.reject('Please contact Administrator angelusualle@gmail.com');
+          else response.text().then(text => {throw Error(text)}).catch((e) => {
+            this.setState({failureMessage: e.message, isFailure: true, isLoading: false})})
         })
         .catch((e) => {
-          this.setState({failureMessage: e, isFailure: true, isLoading: false})}
-        
+          this.setState({failureMessage: e.message, isFailure: true, isLoading: false})}
         );
   }
 
@@ -91,8 +103,9 @@ export class Home extends Component {
               required
               label="*URL"
               onChange={(e) => this.handleChange(e.target.id, e.target.value)}
+              value={this.state.URL}
               disabled={this.state.isSubbed || this.state.isLoading}
-              help="Example: http://www.google.com/search"
+              help="Example: https://usfonline.admin.usf.edu/pls/prod/bwckschd.p_disp_dyn_sched"
               validationState={this.getValidationStateURL()}
             />
             <FieldGroup
@@ -103,6 +116,7 @@ export class Home extends Component {
               label="*Email"
               validationState={this.getValidationStateEmail()}
               onChange={(e) => this.handleChange(e.target.id, e.target.value)}
+              value={this.state.Email}
               help="Example: YourEmail@domain.com"
               disabled={this.state.isSubbed || this.state.isLoading}
             />
@@ -128,7 +142,7 @@ export class Home extends Component {
             <Button type="submit" 
               bsStyle="primary" 
               bsSize="large" 
-              disabled={this.state.isLoading || this.state.isSubbed || this.state.invalid} 
+              disabled={this.state.isLoading || this.state.isSubbed || this.state.invalid || this.state.isFailure} 
            >
               {this.state.isLoading && 'Subscribing..'}
               {this.state.isSubbed && 'Subscribed!'}
