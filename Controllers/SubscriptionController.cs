@@ -29,14 +29,19 @@ namespace Skraper3FrontEnd.Controllers
             try {
                 //Trim fields
                 Trim(sub);
+
                 //Validate
                 if (!IsValidUrl(sub)) return BadRequest($"URL was not found: {sub.Url}. Try Again.");
-                if (!IsValidEmail(sub)) return BadRequest($"Email not formatted properly: {sub.Email}. Try Again.");
+                if (!IsValidEmail(sub)) return BadRequest($"Email invalid: {sub.Email}. Try Again.");
+                if (sub.MobileNumber.Length < 8) return BadRequest($"Mobile Phone invalid: {sub.MobileNumber}. Try Again.");
                 if (await _context.Subscriptions.AnyAsync(s => s.Email.ToUpper() == sub.Email.ToUpper() && s.Url.ToUpper() == sub.Url.ToUpper())){
                     return Conflict("A subscription with this email and URL already exists. Try Again.");
                 }
+
                 //Fix Endings and what not.
-                if (sub.MobileNumber.Trim().Count() == 9) sub.MobileNumber = "1" + sub.MobileNumber.Trim(); //Merica
+                if (sub.MobileNumber.Count() == 9) sub.MobileNumber = "1" + sub.MobileNumber.Trim(); //Merica
+
+                //Add it
                 await _context.Subscriptions.AddAsync(sub);
                 await _context.SaveChangesAsync();
             }
@@ -50,14 +55,16 @@ namespace Skraper3FrontEnd.Controllers
         private void Trim(Subscriptions sub)
         {
             sub.Email = sub.Email.Trim();
-            sub.MobileNumber = sub.MobileNumber.Trim();
+            sub.MobileNumber = GetNumbers(sub.MobileNumber.Trim());
             sub.Xpath = sub.Xpath.Trim();
+            sub.Url = sub.Url.Trim();
 
         }
 
         private bool IsValidEmail(Subscriptions sub)
         {
-            return true;
+            var reg = new RegexUtilities();
+            return reg.IsValidEmail(sub.Email);
         }
         private bool IsValidUrl(Subscriptions sub)
         {
@@ -69,9 +76,15 @@ namespace Skraper3FrontEnd.Controllers
                 }
                 else return true;
             }
-            catch (Exception e){
+            catch (Exception){
                 return false;
             }
         }
+
+        private static string GetNumbers(string input)
+        {
+            return new string(input.Where(c => char.IsDigit(c)).ToArray());
+        }
+
     }
 }

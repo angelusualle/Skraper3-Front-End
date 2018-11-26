@@ -1,11 +1,23 @@
 import React, { Component } from 'react';
 
-export class FetchData extends Component {
-  displayName = FetchData.name
+export class Manage extends Component {
+  displayName = Manage.name
 
   constructor(props) {
     super(props);
-    this.state = { forecasts: [], loading: true };
+    var authenticated = false;
+    var email = '';
+    if (localStorage.getItem("Skraper3Email") !== null){
+      authenticated = true;
+      email= localStorage.getItem("Skraper3Email");
+    }
+    this.state = { subscriptions: [], loading: true, email: email, authenticated:authenticated };
+  }
+
+  componentDidMount() {
+    if (this.state.email !== ''){
+      
+    }
   }
 
   static renderForecastsTable(forecasts) {
@@ -36,13 +48,16 @@ export class FetchData extends Component {
   render() {
     let contents = this.state.loading
       ? <p><em>Loading...</em></p>
-      : FetchData.renderForecastsTable(this.state.forecasts);
+      : Manage.renderForecastsTable(this.state.forecasts);
 
     return (
       <div>
-        <h1>Weather forecast</h1>
-        <p>This component demonstrates fetching data from the server.</p>
-        {contents}
+        {this.state.authenticated ? 
+        <h1>Your subscriptions:</h1>
+        :
+        <h1>Enter your email to manage your subscriptions:</h1>
+        
+      }
       </div>
     );
   }
