@@ -54,10 +54,30 @@ export class Manage extends Component {
     return 'error'
   }
 
+  removeSubscription(sub){
+    fetch('api/Subscription/Delete', {
+      method:'DELETE',
+      body: JSON.stringify(sub),
+      headers:{'Content-Type': 'application/json;charset=UTF-8'}
+    })
+    .then((response) => {
+      if (response.ok) {
+        let arrz = this.state.subscriptions.filter(s => s.url !== sub.url || s.email !== sub.email);
+        this.setState({subscriptions: arrz})
+      }
+      else response.text().then(text => {throw Error(text)}).catch((e) => {
+        this.setState({failureMessage: e.message, isFailure: true, isLoading: false})})
+    })
+    .catch((e) => {
+      this.setState({failureMessage: e.message, isFailure: true, isLoading: false})}
+    );
+  }
+
   logout(e){
     localStorage.removeItem("Skraper3Email");
     this.setState({ subscriptions: [], loading: false, emailSub: '', authenticated:false, invalid:false, isFailure:false, loadingSubs:true})
   }
+
   checkSubscriptions(ex){
     ex.preventDefault();
     this.setState({loading:true});
@@ -90,19 +110,21 @@ export class Manage extends Component {
             <Table responsive striped bordered condensed hover>
               <thead>
                 <tr>
+                  <th>Delete</th>
                   <th>URL</th>
                   <th>Mobile Number</th>
                   <th>XPath</th>
-                  <th>Delete</th>
                 </tr>
               </thead>
               <tbody>
                 {this.state.subscriptions.map(sub =>
                   <tr key={sub.email + sub.url}>
+                  <td><Button bsStyle="danger" bsSize="small" onClick={(e) => this.removeSubscription(sub)}>
+                      <Glyphicon glyph="remove"/> 
+                      </Button></td>
                     <td>{sub.url}</td>
                     <td>{sub.mobileNumber}</td>
                     <td>{sub.xpath}</td>
-                    <td>x</td>
                   </tr>
                 )}
               </tbody>

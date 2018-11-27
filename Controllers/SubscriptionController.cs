@@ -37,7 +37,7 @@ namespace Skraper3FrontEnd.Controllers
         [HttpPost("Add")]
         public async Task<IActionResult> Add([FromBody]Subscriptions sub)
         {
-            if (!ModelState.IsValid) {
+            if (string.IsNullOrWhiteSpace(sub.Email) || string.IsNullOrWhiteSpace(sub.Url)) {
                 return BadRequest("Missing Email or URL.");
             }
             try {
@@ -47,13 +47,13 @@ namespace Skraper3FrontEnd.Controllers
                 //Validate
                 if (!IsValidUrl(sub)) return BadRequest($"URL was not found: {sub.Url}. Try Again.");
                 if (!IsValidEmail(sub.Email)) return BadRequest($"Email invalid: {sub.Email}. Try Again.");
-                if (sub.MobileNumber.Length < 8) return BadRequest($"Mobile Phone invalid: {sub.MobileNumber}. Try Again.");
+                if (sub.MobileNumber.Length < 10) return BadRequest($"Mobile Phone invalid: {sub.MobileNumber}. Try Again.");
                 if (await _context.Subscriptions.AnyAsync(s => s.Email.ToUpper() == sub.Email.ToUpper() && s.Url.ToUpper() == sub.Url.ToUpper())){
                     return Conflict("A subscription with this email and URL already exists. Try Again.");
                 }
 
                 //Fix Endings and what not.
-                if (sub.MobileNumber.Count() == 9) sub.MobileNumber = "1" + sub.MobileNumber.Trim(); //Merica
+                if (sub.MobileNumber.Count() == 10) sub.MobileNumber = "1" + sub.MobileNumber.Trim(); //Merica
 
                 //Add it
                 await _context.Subscriptions.AddAsync(sub);
@@ -64,6 +64,29 @@ namespace Skraper3FrontEnd.Controllers
                 return BadRequest("Unexpected issue when adding subscription. Please email administrator: angelusualle@gmail.com");
             }
             return Ok($"Subscribed {sub.Email} to {sub.Url}");
+        }
+
+        [HttpDelete("[Action]")]
+        public async Task<IActionResult> Delete([FromBody] Subscriptions sub)
+        {
+            if (string.IsNullOrWhiteSpace(sub.Email) || string.IsNullOrWhiteSpace(sub.Url)) {
+                return BadRequest("Missing Email or URL.");
+            }
+            try {
+                //Trim fields
+                Trim(sub);
+                var existingSub = await _context.Subscriptions.FirstOrDefaultAsync(s => s.Email.ToUpper() == sub.Email.ToUpper() &&
+                                                             s.Url.ToUpper() == sub.Url.ToUpper());
+                if (existingSub != null){
+                    _context.Remove(existingSub);
+                   await _context.SaveChangesAsync();
+                }
+                return Ok($"Deleted {sub.Email} to {sub.Url}");
+            }
+            catch (Exception e){
+                _logger.LogError(e.ToString());
+                return BadRequest("Unexpected issue when deleting subscription. Please email administrator: angelusualle@gmail.com");
+            }
         }
 
         private void Trim(Subscriptions sub)
