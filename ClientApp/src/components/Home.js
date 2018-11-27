@@ -37,9 +37,18 @@ export class Home extends Component {
   }
 
   handleChange(id, val) {
-    this.setState({[id]:val, invalid:!valid, isFailure: false});
-    var valid = this.checkValidity();
-    this.setState({invalid:!valid});
+    let valid = false;
+    if (id === 'Email'){
+      valid = validator.isEmail(val) && validator.isURL(this.state.URL);
+    }
+    else if (id === 'URL') {
+      valid = validator.isEmail(this.state.Email) && validator.isURL(val);
+    }
+    else {
+      valid = this.checkValidity();
+    }
+    this.setState({[id]:val, isFailure: false, invalid: !valid});
+    
   }
 
   checkValidity(){

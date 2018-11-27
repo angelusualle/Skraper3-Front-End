@@ -19,6 +19,20 @@ namespace Skraper3FrontEnd.Controllers
             _context = context;
             _logger = logger;
         }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetSubs(string email){
+            if (String.IsNullOrWhiteSpace(email)){
+                return BadRequest("Missing Email for looking up.");
+            }
+            if (!IsValidEmail(email)){
+                return BadRequest($"Email invalid: {email}. Try Again.");
+            }
+            if (!await _context.Subscriptions.AnyAsync(s => s.Email.ToUpper() == email.ToUpper())){
+                 return BadRequest($"No subscriptions for {email}.");
+            }
+            return Ok(_context.Subscriptions.Where(s => s.Email.ToUpper() == email.ToUpper()));
+        }
         
         [HttpPost("Add")]
         public async Task<IActionResult> Add([FromBody]Subscriptions sub)
@@ -32,7 +46,7 @@ namespace Skraper3FrontEnd.Controllers
 
                 //Validate
                 if (!IsValidUrl(sub)) return BadRequest($"URL was not found: {sub.Url}. Try Again.");
-                if (!IsValidEmail(sub)) return BadRequest($"Email invalid: {sub.Email}. Try Again.");
+                if (!IsValidEmail(sub.Email)) return BadRequest($"Email invalid: {sub.Email}. Try Again.");
                 if (sub.MobileNumber.Length < 8) return BadRequest($"Mobile Phone invalid: {sub.MobileNumber}. Try Again.");
                 if (await _context.Subscriptions.AnyAsync(s => s.Email.ToUpper() == sub.Email.ToUpper() && s.Url.ToUpper() == sub.Url.ToUpper())){
                     return Conflict("A subscription with this email and URL already exists. Try Again.");
@@ -61,10 +75,10 @@ namespace Skraper3FrontEnd.Controllers
 
         }
 
-        private bool IsValidEmail(Subscriptions sub)
+        private bool IsValidEmail(string email)
         {
             var reg = new RegexUtilities();
-            return reg.IsValidEmail(sub.Email);
+            return reg.IsValidEmail(email);
         }
         private bool IsValidUrl(Subscriptions sub)
         {

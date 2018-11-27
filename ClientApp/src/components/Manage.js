@@ -1,23 +1,53 @@
 import React, { Component } from 'react';
+import { FormGroup, ControlLabel, FormControl, HelpBlock, Button, Alert } from 'react-bootstrap';
+import validator from "validator"
 
 export class Manage extends Component {
   displayName = Manage.name
 
   constructor(props) {
     super(props);
-    var authenticated = false;
-    var email = '';
+    let authenticated = false;
+    let email = '';
     if (localStorage.getItem("Skraper3Email") !== null){
       authenticated = true;
       email= localStorage.getItem("Skraper3Email");
     }
-    this.state = { subscriptions: [], loading: true, email: email, authenticated:authenticated };
+    this.state = { subscriptions: [], loading: true, emailSub: email, authenticated:authenticated, invalid:true, isFailure:false};
   }
 
   componentDidMount() {
-    if (this.state.email !== ''){
+    if (this.state.emailSub !== ''){
       
     }
+  }
+
+  handleChange(id, val) {
+    let valid = validator.isEmail(val);
+    this.setState({[id]:val, invalid:!valid, isFailure: false});
+  }
+
+  checkValidity(){
+    if (this.getValidationStateEmail() === 'success'){
+      return true;
+    }
+    return false;
+  }
+  getValidationStateEmail(){
+    if (this.state.emailSub.length === 0|| this.state.isLoading) return null;
+    if (validator.isEmail(this.state.emailSub)) return 'success';
+    return 'error'
+  }
+
+  checkSubscriptions(){
+    fetch(`api/Subscription/GetSubs?email=${encodeURIComponent(this.state.emailSub)}`).then((response) => {
+      if (response.ok) return response.json().then((t) => this.setState({authenticated:true, loading:false, subscriptions: t}));
+      else response.text().then(text => {throw Error(text)}).catch((e) => {
+        this.setState({failureMessage: e.message, isFailure: true, loading:false})})
+    })
+    .catch((e) => {
+      this.setState({failureMessage: e.message, isFailure: true, loading: false})}
+    );
   }
 
   static renderForecastsTable(forecasts) {
@@ -46,19 +76,54 @@ export class Manage extends Component {
   }
 
   render() {
-    let contents = this.state.loading
-      ? <p><em>Loading...</em></p>
-      : Manage.renderForecastsTable(this.state.forecasts);
-
     return (
       <div>
         {this.state.authenticated ? 
-        <h1>Your subscriptions:</h1>
+        <div>
+          <h1>Your subscriptions:</h1>
+          {this.renderForecastsTable()}
+        </div>
         :
-        <h1>Enter your email to manage your subscriptions:</h1>
-        
+        <div>
+          <h3>Enter your email to manage your subscriptions:</h3>
+          <FieldGroup
+              id="emailSub"
+              name="Email"
+              type="email"
+              required
+              label="Email"
+              onChange={(e) => this.handleChange(e.target.id, e.target.value)}
+              value={this.state.emailSub}
+              disabled={this.state.isLoading}
+              help="Example: YourEmail@Domain.com"
+              validationState={this.getValidationStateEmail()}
+            />
+            <Button 
+              bsStyle="primary" 
+              bsSize="large" 
+              disabled={this.state.invalid} 
+              onClick={(e) => this.checkSubscriptions(e)}
+            >
+            See your subscriptions
+            </Button>
+            <br></br>
+            <br></br>
+            {this.state.isFailure &&
+          <Alert bsStyle="danger" >
+            {this.state.failureMessage}
+          </Alert>}
+        </div>
       }
       </div>
     );
   }
+}
+function FieldGroup({ id, label, help, validationState, ...props }) {
+  return (
+    <FormGroup controlId={id} validationState={validationState}>
+      <ControlLabel>{label}</ControlLabel>
+      <FormControl {...props}/>
+      {help && <HelpBlock>{help}</HelpBlock>}
+    </FormGroup>
+  );
 }
